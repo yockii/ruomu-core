@@ -1,0 +1,26 @@
+syntax = "proto3";
+package shared;
+option go_package="shared/";
+
+message Empty{}
+
+message InitialRequest {
+  reserved 1,2,3,4;
+  map<string, string> params = 5; //
+}
+
+message InjectCallRequest {
+  string code = 1;
+  bytes value = 2;
+}
+
+message InjectCallResponse {
+  bytes result = 1;
+}
+
+service Communicate {
+  rpc Initial(InitialRequest) returns (Empty);
+  rpc InjectCall(InjectCallRequest) returns (InjectCallResponse);
+}
+
+// protoc .\shared\communicate.proto --go_out=plugins=grpc:.
