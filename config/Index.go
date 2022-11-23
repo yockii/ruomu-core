@@ -68,6 +68,9 @@ func (c *config) GetDuration(key string) time.Duration {
 func (c *config) WatchConfig() {
 	c.Viper.WatchConfig()
 }
+func (c *config) Set(key string, value interface{}) {
+	c.Viper.Set(key, value)
+}
 
 /////////////////////////////////////////////////////////////////////
 //////// 默认配置获取 //////
@@ -120,4 +123,7 @@ func GetDuration(key string) time.Duration {
 }
 func WatchConfig() {
 	DefaultInstance.WatchConfig()
+}
+func Set(key string, value interface{}) {
+	DefaultInstance.Set(key, value)
 }
