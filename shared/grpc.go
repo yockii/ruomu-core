@@ -8,6 +8,24 @@ type GrpcClient struct {
 	client CommunicateClient
 }
 
+func (m *GrpcClient) Initial(params map[string]string) error {
+	_, err := m.client.Initial(context.Background(), &InitialRequest{
+		Params: params,
+	})
+	return err
+}
+
+func (m *GrpcClient) InjectCall(code string, value []byte) ([]byte, error) {
+	resp, err := m.client.InjectCall(context.Background(), &InjectCallRequest{
+		Code:  code,
+		Value: value,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return resp.Result, nil
+}
+
 ////////////////////////////////////////////////////
 
 type GrpcServer struct {
