@@ -3,9 +3,9 @@ package server
 import "github.com/yockii/ruomu-core/database"
 
 type CommonResponse struct {
-	Code int
-	Msg  string
-	Data interface{}
+	Code int         `json:"code,omitempty"`
+	Msg  string      `json:"msg,omitempty"`
+	Data interface{} `json:"data,omitempty"`
 }
 
 type TimeCondition struct {
