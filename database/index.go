@@ -35,7 +35,7 @@ func initDatabaseDefault() {
 
 var DB *xorm.Engine
 
-func init() {
+func Initial() {
 	initDatabaseDefault()
 	InitDB(
 		config.GetString("database.driver"),
