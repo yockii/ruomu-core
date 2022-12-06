@@ -15,10 +15,11 @@ func (m *GrpcClient) Initial(params map[string]string) error {
 	return err
 }
 
-func (m *GrpcClient) InjectCall(code string, value []byte) ([]byte, error) {
+func (m *GrpcClient) InjectCall(code string, headers map[string]string, value []byte) ([]byte, error) {
 	resp, err := m.client.InjectCall(context.Background(), &InjectCallRequest{
-		Code:  code,
-		Value: value,
+		Code:    code,
+		Headers: headers,
+		Value:   value,
 	})
 	if err != nil {
 		return nil, err
@@ -37,6 +38,6 @@ func (g *GrpcServer) Initial(ctx context.Context, request *InitialRequest) (*Emp
 }
 
 func (g *GrpcServer) InjectCall(ctx context.Context, request *InjectCallRequest) (*InjectCallResponse, error) {
-	v, err := g.Impl.InjectCall(request.Code, request.Value)
+	v, err := g.Impl.InjectCall(request.Code, request.Headers, request.Value)
 	return &InjectCallResponse{Result: v}, err
 }
