@@ -63,9 +63,12 @@ func InitDB(dbType, host, user, password, dbName string, port int, prefix string
 		DB.SetTableMapper(names.NewPrefixMapper(names.SnakeMapper{}, prefix))
 	}
 
+	DB.SetLogger(new(dbLogger))
+
 	if showSql {
 		DB.ShowSQL(true)
 	}
+
 	if logLevel != "" {
 		switch strings.ToLower(logLevel) {
 		case "error":
