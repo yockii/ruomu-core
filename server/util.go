@@ -44,6 +44,7 @@ func ParsePaginationInfoFromQuery(ctx *fiber.Ctx) (limit, offset int, orderBy st
 	}
 	return
 }
+
 func GetClientIp(ctx *fiber.Ctx) string {
 	ip := ctx.IP()
 	if ips := ctx.IPs(); len(ips) > 0 {

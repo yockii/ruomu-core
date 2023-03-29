@@ -1,18 +1,21 @@
 package database
 
 import (
-	"errors"
 	"fmt"
 	"strings"
+	"time"
+
+	"github.com/sirupsen/logrus"
+	"gorm.io/driver/mysql"
+	"gorm.io/driver/postgres"
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
+	"gorm.io/gorm/schema"
 
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/lib/pq"
 	_ "modernc.org/sqlite"
-	"xorm.io/xorm"
-	"xorm.io/xorm/log"
-	"xorm.io/xorm/names"
-
-	logger "github.com/sirupsen/logrus"
 
 	"github.com/yockii/ruomu-core/config"
 )
@@ -33,7 +36,7 @@ func initDatabaseDefault() {
 	config.DefaultInstance.SetDefault("database.showSql", false)
 }
 
-var DB *xorm.Engine
+var DB *gorm.DB
 
 func Initial() {
 	initDatabaseDefault()
@@ -45,108 +48,68 @@ func Initial() {
 		config.GetString("database.db"),
 		config.GetInt("database.port"),
 		config.GetString("database.prefix"),
-		config.GetBool("database.showSql"),
 		config.GetString("logger.level"),
 	)
 }
 
-func InitDB(dbType, host, user, password, dbName string, port int, prefix string, showSql bool, logLevel string) {
+func InitDB(dbType, host, user, password, dbName string, port int, prefix string, logLevel string) {
 	var err error
-	DB, err = initDB(dbType, host, user, password, dbName, port)
-	if err != nil {
-		logger.Fatalf("数据库连接失败! %v", err)
-	}
-	if err = DB.Ping(); err != nil {
-		logger.Fatalf("数据库连接失败! %v", err)
-	}
-	if prefix != "" {
-		DB.SetTableMapper(names.NewPrefixMapper(names.SnakeMapper{}, prefix))
-	}
-
-	DB.SetLogger(new(dbLogger))
-
-	if showSql {
-		DB.ShowSQL(true)
-	}
-
-	if logLevel != "" {
-		switch strings.ToLower(logLevel) {
-		case "error":
-			DB.SetLogLevel(log.LOG_ERR)
-		case "warn":
-			DB.SetLogLevel(log.LOG_WARNING)
-		case "info":
-			DB.SetLogLevel(log.LOG_INFO)
-		case "debug":
-			DB.SetLogLevel(log.LOG_DEBUG)
-		default:
-			DB.SetLogLevel(log.LOG_OFF)
-		}
-	}
-
-}
-
-func InitDB2(dbDriver, datasource, prefix string, showSql bool, logLevel string) {
-	var err error
-	DB, err = initDBWithDefine(dbDriver, datasource)
-	if err != nil {
-		logger.Fatalf("数据库连接失败! %v", err)
-	}
-	if err = DB.Ping(); err != nil {
-		logger.Fatalf("数据库连接失败! %v", err)
-	}
-	if prefix != "" {
-		DB.SetTableMapper(names.NewPrefixMapper(names.SnakeMapper{}, prefix))
-	}
-
-	if showSql {
-		DB.ShowSQL(true)
-	}
-	if logLevel != "" {
-		switch strings.ToLower(logLevel) {
-		case "error":
-			DB.SetLogLevel(log.LOG_ERR)
-		case "warn":
-			DB.SetLogLevel(log.LOG_WARNING)
-		case "info":
-			DB.SetLogLevel(log.LOG_INFO)
-		case "debug":
-			DB.SetLogLevel(log.LOG_DEBUG)
-		default:
-			DB.SetLogLevel(log.LOG_OFF)
-		}
-	}
-}
-
-func initDBWithDefine(driverName, datasourceName string) (*xorm.Engine, error) {
-	return xorm.NewEngine(driverName, datasourceName)
-}
-
-func initDB(dbType string, host string, user string, password string, dbName string, port int) (*xorm.Engine, error) {
 	if dbType == "mysql" {
-		return initDBWithDefine("mysql", fmt.Sprintf(
-			mysqlConnStringFmt,
-			user,
-			password,
-			host,
-			port,
-			dbName,
-		))
+		DB, err = gorm.Open(mysql.Open(fmt.Sprintf(mysqlConnStringFmt,
+			user, password, host, port, dbName)), &gorm.Config{})
 	} else if dbType == "pg" || dbType == "postgres" {
-		return initDBWithDefine("postgres", fmt.Sprintf(
-			pgConnStringFmt,
-			host,
-			port,
-			user,
-			password,
-			dbName,
-		))
+		DB, err = gorm.Open(postgres.Open(fmt.Sprintf(pgConnStringFmt,
+			host, port, user, password, dbName)), &gorm.Config{})
+	} else if dbType == "sqlite" {
+		DB, err = gorm.Open(sqlite.Open(host), &gorm.Config{})
 	} else {
-		logger.Errorf("数据库初始化失败, 不支持的数据库类型! type=%s, host=%s, user=%s, pwd=%s, db=%s, port=%d", dbType, host, user, password, dbName, port)
-		return nil, errors.New("数据库初始化失败, 不支持的数据库类型")
+		logrus.Fatalf("不支持的数据库: %s", dbType)
 	}
+	if err != nil {
+		logrus.Fatalf("数据库连接失败! %v", err)
+	}
+	DB.Config.NamingStrategy = schema.NamingStrategy{
+		TablePrefix:   prefix,
+		SingularTable: true,
+	}
+	DB.Config.SkipDefaultTransaction = true
+
+	slowThreshold := time.Second
+	level := logger.Silent
+	switch strings.ToLower(logLevel) {
+	case "error":
+		level = logger.Error
+	case "warn":
+		level = logger.Warn
+	case "info":
+		level = logger.Info
+		slowThreshold = 0
+	}
+
+	newLogger := logger.New(logrus.StandardLogger(), logger.Config{
+		SlowThreshold:             slowThreshold,
+		LogLevel:                  level,
+		IgnoreRecordNotFoundError: true,
+	})
+	DB.Config.Logger = newLogger
+
+	//if logLevel != "" {
+	//	switch strings.ToLower(logLevel) {
+	//	case "error":
+	//		DB.Config.Logger.LogMode(logger.Error)
+	//	case "warn":
+	//		DB.Config.Logger.LogMode(logger.Warn)
+	//	case "info":
+	//		DB.Config.Logger.LogMode(logger.Info)
+	//	default:
+	//		DB.Config.Logger.LogMode(logger.Silent)
+	//	}
+	//}
 }
 
 func Close() {
-	_ = DB.Close()
+	db, _ := DB.DB()
+	if db != nil {
+		db.Close()
+	}
 }
