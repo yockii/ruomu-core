@@ -113,3 +113,9 @@ func Close() {
 		db.Close()
 	}
 }
+
+// AutoMigrate 自动迁移
+func AutoMigrate(models ...interface{}) error {
+	return DB.AutoMigrate(models...)
+	// 不能直接使用db的迁移，要增加表注释, 如何处理?兼容不同数据库
+}
