@@ -5,6 +5,15 @@
 - [x] 基础功能库
 - [ ] 公共调用rpc接口
 
+# 数据库相关包
+需要自行引入，不包含在核心包中
+```go
+import (
+	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/lib/pq"
+	_ "modernc.org/sqlite"
+)
+```
 
 # 接口功能
 - [ ] HTTP请求时调用模块
