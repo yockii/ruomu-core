@@ -13,16 +13,15 @@ import (
 	"github.com/yockii/ruomu-core/database"
 )
 
-type webApp struct {
+type WebApp struct {
 	app *fiber.App
 }
 
-var defaultApp *webApp
+var defaultApp *WebApp
 
 func init() {
 	initServerDefault()
 
-	initFiberParser()
 	if config.GetString("server.viewsDir") != "" {
 		extension := config.GetString("server.viewExtension")
 		if extension == "" {
@@ -50,11 +49,12 @@ func initFiberParser() {
 	})
 }
 
-func InitWebApp(views fiber.Views) *webApp {
+func InitWebApp(views fiber.Views) *WebApp {
 	initFiberParser()
 	app := fiber.New(fiber.Config{
 		DisableStartupMessage: true,
 		Views:                 views,
+		BodyLimit:             10 * 1024 * 1024 * 1024,
 	})
 	app.Use(recover.New(recover.Config{
 		EnableStackTrace: true,
@@ -64,43 +64,43 @@ func InitWebApp(views fiber.Views) *webApp {
 	}))
 	app.Use(cors.New())
 
-	return &webApp{app}
+	return &WebApp{app}
 }
 
-func (a *webApp) Listener(ln net.Listener) error {
+func (a *WebApp) Listener(ln net.Listener) error {
 	return a.app.Listener(ln)
 }
-func (a *webApp) Static(dir string) {
+func (a *WebApp) Static(dir string) {
 	a.app.Static("/", dir, fiber.Static{
 		Compress: true,
 	})
 }
 
-func (a *webApp) Use(args ...interface{}) fiber.Router {
+func (a *WebApp) Use(args ...interface{}) fiber.Router {
 	return a.app.Use(args...)
 }
-func (a *webApp) Group(path string, handlers ...fiber.Handler) fiber.Router {
+func (a *WebApp) Group(path string, handlers ...fiber.Handler) fiber.Router {
 	return a.app.Group(path, handlers...)
 }
-func (a *webApp) All(path string, handlers ...fiber.Handler) fiber.Router {
+func (a *WebApp) All(path string, handlers ...fiber.Handler) fiber.Router {
 	return a.app.All(path, handlers...)
 }
-func (a *webApp) Get(path string, handlers ...fiber.Handler) fiber.Router {
+func (a *WebApp) Get(path string, handlers ...fiber.Handler) fiber.Router {
 	return a.app.Get(path, handlers...)
 }
-func (a *webApp) Put(path string, handlers ...fiber.Handler) fiber.Router {
+func (a *WebApp) Put(path string, handlers ...fiber.Handler) fiber.Router {
 	return a.app.Put(path, handlers...)
 }
-func (a *webApp) Post(path string, handlers ...fiber.Handler) fiber.Router {
+func (a *WebApp) Post(path string, handlers ...fiber.Handler) fiber.Router {
 	return a.app.Post(path, handlers...)
 }
-func (a *webApp) Delete(path string, handlers ...fiber.Handler) fiber.Router {
+func (a *WebApp) Delete(path string, handlers ...fiber.Handler) fiber.Router {
 	return a.app.Delete(path, handlers...)
 }
-func (a *webApp) Start(addr string) error {
+func (a *WebApp) Start(addr string) error {
 	return a.app.Listen(addr)
 }
-func (a *webApp) Shutdown() error {
+func (a *WebApp) Shutdown() error {
 	return a.app.Shutdown()
 }
 
