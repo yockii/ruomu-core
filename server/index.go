@@ -1,12 +1,12 @@
 package server
 
 import (
+	"github.com/gofiber/template/html/v2"
 	"net"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/recover"
-	"github.com/gofiber/template/html"
 	logger "github.com/sirupsen/logrus"
 
 	"github.com/yockii/ruomu-core/config"
