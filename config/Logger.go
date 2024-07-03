@@ -2,6 +2,9 @@ package config
 
 import (
 	"fmt"
+	"github.com/rifflock/lfshook"
+	logger "github.com/sirupsen/logrus"
+	"gopkg.in/natefinch/lumberjack.v2"
 	"io"
 	"os"
 	"path"
@@ -9,10 +12,6 @@ import (
 	"runtime"
 	"strings"
 	"time"
-
-	rotatelogs "github.com/lestrrat/go-file-rotatelogs"
-	"github.com/rifflock/lfshook"
-	logger "github.com/sirupsen/logrus"
 )
 
 const (
@@ -21,6 +20,15 @@ const (
 	maximumCallerDepth int = 25
 	minimumCallerDepth int = 4
 )
+
+func init() {
+	loc, err := time.LoadLocation("Asia/Shanghai")
+	if err != nil {
+		logger.Warn("加载时区失败, 使用默认时区")
+		loc = time.Local
+	}
+	time.Local = loc
+}
 
 func InitialLogger() {
 	initLoggerDefault()
@@ -57,43 +65,37 @@ func setLoggerRotateHook() {
 		}
 	}
 
-	rotatedNum := GetInt("logger.rotate")
+	rotatedNum := GetInt("logger.backups")
 	if rotatedNum <= 0 {
 		rotatedNum = 7
 	}
-	logFileRegex := "%Y-%m-%d.log"
-	rotationTime := 24 * time.Hour
 
 	lfHook := lfshook.NewHook(lfshook.WriterMap{
-		logger.DebugLevel: writer(p, logFileRegex, "debug", rotatedNum, rotationTime),
-		logger.InfoLevel:  writer(p, logFileRegex, "info", rotatedNum, rotationTime),
-		logger.WarnLevel:  writer(p, logFileRegex, "warn", rotatedNum, rotationTime),
-		logger.ErrorLevel: writer(p, logFileRegex, "error", rotatedNum, rotationTime),
+		logger.DebugLevel: writer(p, "debug", rotatedNum),
+		logger.InfoLevel:  writer(p, "info", rotatedNum),
+		logger.WarnLevel:  writer(p, "warn", rotatedNum),
+		logger.ErrorLevel: writer(p, "error", rotatedNum),
 	}, &logger.TextFormatter{
 		DisableColors:   true,
 		TimestampFormat: "2006-01-02 15:04:05",
 	})
-	//}, &myFormatter{})
 
 	logger.AddHook(lfHook)
+
 	return
 }
 
-func writer(logPath, logFileRegex, level string, rotatedNum int, rotationTime time.Duration) io.Writer {
+func writer(logPath, level string, rotatedNum int) io.Writer {
 	logFullPath := path.Join(logPath, level)
-	fileSuffix := logFileRegex
 
-	logier, err := rotatelogs.New(
-		logFullPath+"-"+fileSuffix,
-		rotatelogs.WithLinkName(logFullPath+".log"),
-		rotatelogs.WithRotationCount(rotatedNum),
-		//rotatelogs.WithMaxAge(rotationTime*time.Duration(rotatedNum)),
-		rotatelogs.WithRotationTime(rotationTime),
-	)
-
-	if err != nil {
-		panic(err)
+	logier := &lumberjack.Logger{
+		Filename:   logFullPath + ".log",
+		MaxSize:    GetInt("logger.maxSize", 100), // megabytes
+		MaxBackups: rotatedNum,
+		MaxAge:     GetInt("logger.maxAge", 30), //days
+		Compress:   GetBool("logger.compress"),
 	}
+
 	return logier
 }
 

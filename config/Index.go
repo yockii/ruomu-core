@@ -35,23 +35,59 @@ func (c *config) AutomaticEnv() {
 	c.Viper.AutomaticEnv()
 }
 
-func (c *config) GetString(key string) string {
-	return c.Viper.GetString(key)
+func (c *config) GetString(key string, defaultValue ...string) string {
+	if c.Viper.IsSet(key) {
+		return c.Viper.GetString(key)
+	}
+	if len(defaultValue) == 0 {
+		return ""
+	}
+	return defaultValue[0]
 }
-func (c *config) GetInt(key string) int {
-	return c.Viper.GetInt(key)
+func (c *config) GetInt(key string, defaultValue ...int) int {
+	if c.Viper.IsSet(key) {
+		return c.Viper.GetInt(key)
+	}
+	if len(defaultValue) == 0 {
+		return 0
+	}
+	return defaultValue[0]
 }
-func (c *config) GetBool(key string) bool {
-	return c.Viper.GetBool(key)
+func (c *config) GetBool(key string, defaultValue ...bool) bool {
+	if c.Viper.IsSet(key) {
+		return c.Viper.GetBool(key)
+	}
+	if len(defaultValue) == 0 {
+		return false
+	}
+	return defaultValue[0]
 }
-func (c *config) GetUint(key string) uint {
-	return c.Viper.GetUint(key)
+func (c *config) GetUint(key string, defaultValue ...uint) uint {
+	if c.Viper.IsSet(key) {
+		return c.Viper.GetUint(key)
+	}
+	if len(defaultValue) == 0 {
+		return 0
+	}
+	return defaultValue[0]
 }
-func (c *config) GetUint64(key string) uint64 {
-	return c.Viper.GetUint64(key)
+func (c *config) GetUint64(key string, defaultValue ...uint64) uint64 {
+	if c.Viper.IsSet(key) {
+		return c.Viper.GetUint64(key)
+	}
+	if len(defaultValue) == 0 {
+		return 0
+	}
+	return defaultValue[0]
 }
-func (c *config) GetFloat64(key string) float64 {
-	return c.Viper.GetFloat64(key)
+func (c *config) GetFloat64(key string, defaultValue ...float64) float64 {
+	if c.Viper.IsSet(key) {
+		return c.Viper.GetFloat64(key)
+	}
+	if len(defaultValue) == 0 {
+		return 0
+	}
+	return defaultValue[0]
 }
 func (c *config) IsSet(key string) bool {
 	return c.Viper.IsSet(key)
@@ -88,23 +124,23 @@ func AutomaticEnv() {
 	DefaultInstance.AutomaticEnv()
 }
 
-func GetString(key string) string {
-	return DefaultInstance.GetString(key)
+func GetString(key string, defaultValue ...string) string {
+	return DefaultInstance.GetString(key, defaultValue...)
 }
-func GetInt(key string) int {
-	return DefaultInstance.GetInt(key)
+func GetInt(key string, defaultValue ...int) int {
+	return DefaultInstance.GetInt(key, defaultValue...)
 }
-func GetBool(key string) bool {
-	return DefaultInstance.GetBool(key)
+func GetBool(key string, defaultValue ...bool) bool {
+	return DefaultInstance.GetBool(key, defaultValue...)
 }
-func GetUint(key string) uint {
-	return DefaultInstance.GetUint(key)
+func GetUint(key string, defaultValue ...uint) uint {
+	return DefaultInstance.GetUint(key, defaultValue...)
 }
-func GetUint64(key string) uint64 {
-	return DefaultInstance.GetUint64(key)
+func GetUint64(key string, defaultValue ...uint64) uint64 {
+	return DefaultInstance.GetUint64(key, defaultValue...)
 }
-func GetFloat64(key string) float64 {
-	return DefaultInstance.GetFloat64(key)
+func GetFloat64(key string, defaultValue ...float64) float64 {
+	return DefaultInstance.GetFloat64(key, defaultValue...)
 }
 func IsSet(key string) bool {
 	return DefaultInstance.IsSet(key)
