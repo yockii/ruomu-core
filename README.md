@@ -8,6 +8,8 @@
 # 数据库相关包
 需要自行引入，不包含在核心包中
 ```go
+package main
+
 import (
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/lib/pq"

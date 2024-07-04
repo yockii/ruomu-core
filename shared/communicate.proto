@@ -9,10 +9,14 @@ message InitialRequest {
   map<string, string> params = 5; //
 }
 
+message StringList {
+  repeated string values = 1;
+}
+
 message InjectCallRequest {
   string code = 1;
 
-  map<string, string> headers = 4;
+  map<string, StringList> headers = 4;
   bytes value = 5;
 }
 

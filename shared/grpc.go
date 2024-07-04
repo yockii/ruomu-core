@@ -15,10 +15,10 @@ func (m *GrpcClient) Initial(params map[string]string) error {
 	return err
 }
 
-func (m *GrpcClient) InjectCall(code string, headers map[string]string, value []byte) ([]byte, error) {
+func (m *GrpcClient) InjectCall(code string, headers map[string][]string, value []byte) ([]byte, error) {
 	resp, err := m.client.InjectCall(context.Background(), &InjectCallRequest{
 		Code:    code,
-		Headers: headers,
+		Headers: MapToProto(headers),
 		Value:   value,
 	})
 	if err != nil {
@@ -33,11 +33,15 @@ type GrpcServer struct {
 	Impl Communicate
 }
 
+func (g *GrpcServer) mustEmbedUnimplementedCommunicateServer() {
+	g.Impl.mustEmbedUnimplementedCommunicateServer()
+}
+
 func (g *GrpcServer) Initial(ctx context.Context, request *InitialRequest) (*Empty, error) {
 	return &Empty{}, g.Impl.Initial(request.Params)
 }
 
 func (g *GrpcServer) InjectCall(ctx context.Context, request *InjectCallRequest) (*InjectCallResponse, error) {
-	v, err := g.Impl.InjectCall(request.Code, request.Headers, request.Value)
+	v, err := g.Impl.InjectCall(request.Code, ProtoToMap(request.Headers), request.Value)
 	return &InjectCallResponse{Result: v}, err
 }
