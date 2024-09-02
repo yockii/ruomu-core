@@ -2,7 +2,6 @@ package config
 
 import (
 	"fmt"
-	"github.com/rifflock/lfshook"
 	logger "github.com/sirupsen/logrus"
 	"gopkg.in/natefinch/lumberjack.v2"
 	"io"
@@ -70,7 +69,7 @@ func setLoggerRotateHook() {
 		rotatedNum = 7
 	}
 
-	lfHook := lfshook.NewHook(lfshook.WriterMap{
+	lfHook := NewHook(WriterMap{
 		logger.DebugLevel: writer(p, "debug", rotatedNum),
 		logger.InfoLevel:  writer(p, "info", rotatedNum),
 		logger.WarnLevel:  writer(p, "warn", rotatedNum),
