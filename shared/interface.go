@@ -17,7 +17,7 @@ type Communicate interface {
 	InjectCall(code string, headers map[string][]string, value []byte) ([]byte, error)
 
 	// 以下为grpc必须实现的接口
-	mustEmbedUnimplementedCommunicateServer()
+	//mustEmbedUnimplementedCommunicateServer()
 }
 
-//  protoc --go_out=. --go-grpc_out=. shared/*.proto
+//  protoc --go_out=. --go-grpc_out=require_unimplemented_servers=false:. shared/*.proto

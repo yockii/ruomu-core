@@ -33,10 +33,6 @@ type GrpcServer struct {
 	Impl Communicate
 }
 
-func (g *GrpcServer) mustEmbedUnimplementedCommunicateServer() {
-	g.Impl.mustEmbedUnimplementedCommunicateServer()
-}
-
 func (g *GrpcServer) Initial(ctx context.Context, request *InitialRequest) (*Empty, error) {
 	return &Empty{}, g.Impl.Initial(request.Params)
 }

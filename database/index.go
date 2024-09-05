@@ -106,7 +106,7 @@ func InitDB(dbType, host, user, password, dbName string, port int, prefix string
 func Close() {
 	db, _ := DB.DB()
 	if db != nil {
-		db.Close()
+		_ = db.Close()
 	}
 }
 
