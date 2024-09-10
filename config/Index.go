@@ -107,6 +107,9 @@ func (c *config) WatchConfig() {
 func (c *config) Set(key string, value interface{}) {
 	c.Viper.Set(key, value)
 }
+func (c *config) WriteConfig() error {
+	return c.Viper.WriteConfig()
+}
 
 /////////////////////////////////////////////////////////////////////
 //////// 默认配置获取 //////
@@ -162,4 +165,7 @@ func WatchConfig() {
 }
 func Set(key string, value interface{}) {
 	DefaultInstance.Set(key, value)
+}
+func WriteConfig() error {
+	return DefaultInstance.WriteConfig()
 }
