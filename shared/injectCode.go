@@ -24,6 +24,7 @@ const (
 type AuthorizationInfo struct {
 	ResourceCodes []string
 	RoleIds       []string
+	IsSuperAdmin  bool
 }
 
 const (
