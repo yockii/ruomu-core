@@ -14,8 +14,8 @@ type TimeCondition struct {
 }
 
 type Paginate struct {
-	Total  int64       `json:"total"`
-	Offset int         `json:"offset"`
-	Limit  int         `json:"limit"`
-	Items  interface{} `json:"items"`
+	Total  int64         `json:"total,omitempty"`
+	Offset int           `json:"offset,omitempty"`
+	Limit  int           `json:"limit,omitempty"`
+	Items  []interface{} `json:"items,omitempty"`
 }
